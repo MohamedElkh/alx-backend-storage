@@ -13,9 +13,8 @@ def func_nginx(nginx_collection):
         req_cx = len(list(nginx_collection.find({'method': meth})))
         print('\tmethod {}: {}'.format(meth, req_cx))
 
-    status_count = len(list(
-        nginx_collection.find({'method': 'GET', 'path': '/status'})
-    ))
+    status_count = len(list(nginx_collection.find({'method': 'GET',
+                                                   'path': '/status'})))
     print('{} status check'.format(status_count))
 
 
@@ -38,9 +37,10 @@ def print_top(server_collection):
     )
 
     for reqx in requestxs:
-        ip = request_log['_id']
-        ip_reqs_c = reqx['totalRequests']
-        print('\t{}: {}'.format(ip, ip_s_c))
+        ip = reqx['_id']
+        ip_reqsc = reqx['totalRequests']
+
+        print('\t{}: {}'.format(ip, ip_reqsc))
 
 
 def run():
