@@ -82,22 +82,21 @@ class Cache:
 
         return data
 
-    def replay(method: Callable):
+    def replay(method: Callable) -> None:
         """func to display the history of calls of a particular"""
         key = method.__qualname__
-        inp = key + ":inputs"
-        outp = key + ":outputs"
+        inputs = key + ":inputs"
+        outputs = key + ":outputs"
 
         redis = method.__self__._redis
-        countt = redis.get(key).decode("utf-8")
+        count = redis.get(key).decode("utf-8")
 
-        print("{} was called {} times:".format(key, countt))
+        print("{} was called {} times:".format(key, count))
+        inputList = redis.lrange(inputs, 0, -1)
+        outputList = redis.lrange(outputs, 0, -1)
 
-        inputListx = redis.lrange(inp, 0, -1)
-        outputListx = redis.lrange(outp, 0, -1)
-
-        zipped = list(zip(inputListx, outputListx))
-
-        for a, b in zipped:
+        redis_zipped = list(zip(inputList, outputList))
+        for a, b in redis_zipped:
             attr, data = a.decode("utf-8"), b.decode("utf-8")
+
             print("{}(*{}) -> {}".format(key, attr, data))
