@@ -82,21 +82,30 @@ class Cache:
 
         return data
 
-    def replay(method: Callable) -> None:
-        """func to display the history of calls of a particular"""
-        key = method.__qualname__
-        inputs = key + ":inputs"
-        outputs = key + ":outputs"
+    def replay(fn: Callable):
+        """display the history of calls of a particular function"""
+        r = redis.Redis()
+        function_name = fn.__qualname__
+        value = r.get(function_name)
+        try:
+            value = int(value.decode("utf-8"))
+        except Exception:
+            value = 0
 
-        redis = method.__self__._redis
-        count = redis.get(key).decode("utf-8")
+        print("{} was called {} times:".format(function_name, value))
+        # inputs = r.lrange(f"{function_name}:inputs", 0, -1)
+        inputs = r.lrange("{}:inputs".format(function_name), 0, -1)
+        # outputs = r.lrange(f"{function_name}:outputs", 0, -1)
+        outputs = r.lrange("{}:outputs".format(function_name), 0, -1)
 
-        print("{} was called {} times:".format(key, count))
-        inputList = redis.lrange(inputs, 0, -1)
-        outputList = redis.lrange(outputs, 0, -1)
-
-        redis_zipped = list(zip(inputList, outputList))
-        for a, b in redis_zipped:
-            attr, data = a.decode("utf-8"), b.decode("utf-8")
-
-            print("{}(*{}) -> {}".format(key, attr, data))
+        for input, output in zip(inputs, outputs):
+            try:
+                input = input.decode("utf-8")
+            except Exception:
+                input = ""
+            try:
+                output = output.decode("utf-8")
+            except Exception:
+                output = ""
+            # print(f"{function_name}(*{input}) -> {output}")
+            print("{}(*{}) -> {}".format(function_name, input, output))
